@@ -1,3 +1,7 @@
+if (typeof global === 'undefined') {
+  window.global = window;
+}
+
 // import the screens
 import Start from './components/Start';
 import Chat from './components/Chat';

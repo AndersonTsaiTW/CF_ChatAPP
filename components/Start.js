@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, ImageBackground, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TextInput, ImageBackground, TouchableOpacity, Platform, KeyboardAvoidingView } from 'react-native';
 
 const image = require('../img/BackgroundImage.png');
 
@@ -38,6 +38,9 @@ const Start = ({ navigation }) => {
         >
           <Text style={styles.chatButtonText}>Go to CHAT!!!</Text>
         </TouchableOpacity>
+
+        {/* use the KeyboardAvoidingView to adjust the layout */}
+        {Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null}
       </ImageBackground>
     </View>
   );
