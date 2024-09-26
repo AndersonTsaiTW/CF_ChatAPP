@@ -2,6 +2,8 @@ if (typeof global === 'undefined') {
   window.global = window;
 }
 
+// test for the github push
+
 // import the screens
 import Start from './components/Start';
 import Chat from './components/Chat';
