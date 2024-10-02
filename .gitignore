@@ -34,3 +34,5 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 backupPackage.json
+
+firebaseConfig.js
