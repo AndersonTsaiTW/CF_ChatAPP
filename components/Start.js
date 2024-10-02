@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, ImageBackground, TouchableOpacity, Platform, KeyboardAvoidingView } from 'react-native';
 
+import { getAuth, signInAnonymously } from "firebase/auth";
+
 const image = require('../img/BackgroundImage.png');
 
 const Start = ({ navigation }) => {
@@ -11,6 +13,19 @@ const Start = ({ navigation }) => {
   const changeBackgroundColor = (newColor) => {
     setBackgroundColor(newColor);
   };
+
+  const auth = getAuth();
+  const signInUser = () => {
+    signInAnonymously(auth)
+      .then(result => {
+        // navigate to shoppingLists page
+        navigation.navigate("Chat", { userID: result.user.uid, name: name, backgroundColor: backgroundColor });
+        Alert.alert("Signed in Successfully!");
+      })
+      .catch((error) => {
+        Alert.alert("Unable to sign in, try later again.");
+      })
+  }
 
   return (
     <View style={styles.container}>
@@ -34,7 +49,7 @@ const Start = ({ navigation }) => {
         </View>
         <TouchableOpacity
           style={styles.chatButton}
-          onPress={() => navigation.navigate('Chat', { name: name, backgroundColor: backgroundColor })}
+          onPress={signInUser}
         >
           <Text style={styles.chatButtonText}>Go to CHAT!!!</Text>
         </TouchableOpacity>
