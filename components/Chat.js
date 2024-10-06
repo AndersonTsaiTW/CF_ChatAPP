@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { StyleSheet, View, Platform, KeyboardAvoidingView } from 'react-native';
-import { Bubble, GiftedChat } from "react-native-gifted-chat";
+import { Bubble, GiftedChat, InputToolbar } from "react-native-gifted-chat";
 
 import { collection, addDoc, onSnapshot, query, where, orderBy } from "firebase/firestore";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-const Chat = ({ db, route, navigation }) => {
+const Chat = ({ db, route, navigation, isConnected }) => {
   const { userID, name, backgroundColor } = route.params;
 
   const [messages, setMessages] = useState([]);
@@ -15,26 +15,48 @@ const Chat = ({ db, route, navigation }) => {
     addDoc(collection(db, "messages"), newMessages[0])
   }
 
+  const loadCachedMessages = async () => {
+    const cachedMessages = await AsyncStorage.getItem("chatMessages") || [];
+    setMessages(JSON.parse(cachedMessages));
+  }
+
+  const cacheMessages = async (messages) => {
+    try {
+      await AsyncStorage.setItem('chatMessages', JSON.stringify(messages));
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  let unsubMessages;
   useEffect(() => {
-    const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
-    const unsubMessages = onSnapshot(q, (documentsSnapshot) => {
-      let newMessages = [];
-      documentsSnapshot.forEach(doc => {
-        const data = doc.data();
-        newMessages.push({
-          id: doc.id,
-          ...data,
-          createdAt: data.createdAt ? data.createdAt.toDate() : new Date()
+
+    if (isConnected === true) {
+      if (unsubMessages) unsubMessages();
+      unsubMessages = null;
+
+
+      const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
+      unsubMessages = onSnapshot(q, (documentsSnapshot) => {
+        let newMessages = [];
+        documentsSnapshot.forEach(doc => {
+          const data = doc.data();
+          newMessages.push({
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt ? data.createdAt.toDate() : new Date()
+          });
         });
+        cacheMessages(newMessages);
+        setMessages(newMessages);
       });
-      setMessages(newMessages);
-    });
+    } else loadCachedMessages();
 
     // Clean up code
     return () => {
       if (unsubMessages) unsubMessages();
     }
-  }, []);
+  }, [isConnected]);
 
   // style the chat bubble
   const renderBubble = (props) => {
@@ -49,6 +71,14 @@ const Chat = ({ db, route, navigation }) => {
         }
       }}
     />
+  }
+
+  const renderInputToolbar = (props) => {
+    if (isConnected) {
+      return <InputToolbar {...props} />;
+    } else {
+      return null;  // Don't show InputToolbar when offline
+    }
   }
 
   useEffect(() => {
@@ -66,6 +96,7 @@ const Chat = ({ db, route, navigation }) => {
           _id: userID,
           name: name
         }}
+        renderInputToolbar={renderInputToolbar}
       />
       {Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null}
 

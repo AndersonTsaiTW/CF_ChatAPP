@@ -16,13 +16,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 const Stack = createNativeStackNavigator();
 
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, disableNetwork, enableNetwork } from "firebase/firestore";
 import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import firebaseConfig from './firebaseConfig.js';
 
+import { useNetInfo } from "@react-native-community/netinfo";
+
+import { useEffect } from "react";
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Alert } from 'react-native';
 
 
 const App = () => {
@@ -32,12 +34,19 @@ const App = () => {
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
 
-  // const auth = initializeAuth(app, {
-  //   persistence: getReactNativePersistence(AsyncStorage),
-  // });
+  const connectionStatus = useNetInfo();
+  useEffect(() => {
+    if (connectionStatus.isConnected === false) {
+      Alert.alert("Connection Lost!");
+      // prevent to call firestore when there is no internet
+      disableNetwork(db);
+    } else if (connectionStatus.isConnected === true) {
+      enableNetwork(db);
+    }
+  }, [connectionStatus.isConnected]);
 
   const ChatScreen = (props) => {
-    return <Chat db={db} {...props} />;  // 直接使用 App.js 中初始化的 db
+    return <Chat isConnected={connectionStatus.isConnected} db={db} {...props} />;
   };
 
   return (
@@ -51,7 +60,7 @@ const App = () => {
         />
         <Stack.Screen
           name="Chat"
-          component={ChatScreen}  // 使用提取出來的組件
+          component={ChatScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>
