@@ -40,7 +40,6 @@ const Chat = ({ db, route, navigation, isConnected, storage }) => {
       if (unsubMessages) unsubMessages();
       unsubMessages = null;
 
-
       const q = query(collection(db, "messages"), orderBy("createdAt", "desc"));
       unsubMessages = onSnapshot(q, (documentsSnapshot) => {
         let newMessages = [];

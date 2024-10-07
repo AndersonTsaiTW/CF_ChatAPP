@@ -2,9 +2,9 @@
 if (typeof global === 'undefined') {
   window.global = window;
 }
-// import the screens
-import Start from './components/Start';
-import Chat from './components/Chat';
+
+import { useEffect } from "react";
+import { StyleSheet, Alert } from 'react-native';
 
 // import react Navigation
 import { NavigationContainer } from '@react-navigation/native';
@@ -19,12 +19,11 @@ import firebaseConfig from './firebaseConfig.js';
 
 import { getStorage } from "firebase/storage";
 
-
 import { useNetInfo } from "@react-native-community/netinfo";
 
-import { useEffect } from "react";
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Alert } from 'react-native';
+// import the screens
+import Start from './components/Start';
+import Chat from './components/Chat';
 
 
 const App = () => {

@@ -9,9 +9,9 @@ import * as Location from 'expo-location';
 
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-// Use onSend to sand location information back
-// onSend is a aprt of props which is passed from Chat.js
-// so in Chat.js, you only can see they pass the props 
+// Originally, I tried to get onSend function from props but failed
+// now the onSend is send like a normal prop by its name
+// The message transit by this function need to fit the GiftedChat requirement(user, id ...etc)
 const CustomActions = ({ wrapperStyle, iconTextStyle, storage, onSend, userID }) => {
   const actionSheet = useActionSheet();
 
