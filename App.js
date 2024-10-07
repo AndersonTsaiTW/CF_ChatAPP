@@ -1,10 +1,7 @@
-
+// App.js
 if (typeof global === 'undefined') {
   window.global = window;
 }
-
-// test for the github push
-
 // import the screens
 import Start from './components/Start';
 import Chat from './components/Chat';
@@ -20,6 +17,9 @@ import { getFirestore, disableNetwork, enableNetwork } from "firebase/firestore"
 import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import firebaseConfig from './firebaseConfig.js';
 
+import { getStorage } from "firebase/storage";
+
+
 import { useNetInfo } from "@react-native-community/netinfo";
 
 import { useEffect } from "react";
@@ -33,6 +33,7 @@ const App = () => {
 
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
+  const storage = getStorage(app);
 
   const connectionStatus = useNetInfo();
   useEffect(() => {
@@ -46,7 +47,11 @@ const App = () => {
   }, [connectionStatus.isConnected]);
 
   const ChatScreen = (props) => {
-    return <Chat isConnected={connectionStatus.isConnected} db={db} {...props} />;
+    return <Chat
+      isConnected={connectionStatus.isConnected}
+      db={db}
+      storage={storage}
+      {...props} />;
   };
 
   return (

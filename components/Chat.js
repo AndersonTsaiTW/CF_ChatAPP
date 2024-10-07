@@ -1,3 +1,4 @@
+// components/Chat.js
 import { useState, useEffect } from "react";
 import { StyleSheet, View, Platform, KeyboardAvoidingView } from 'react-native';
 import { Bubble, GiftedChat, InputToolbar } from "react-native-gifted-chat";
@@ -5,11 +6,15 @@ import { Bubble, GiftedChat, InputToolbar } from "react-native-gifted-chat";
 import { collection, addDoc, onSnapshot, query, where, orderBy } from "firebase/firestore";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Chat = ({ db, route, navigation, isConnected }) => {
+import MapView from 'react-native-maps';
+
+import CustomActions from './CustomActions';
+
+const Chat = ({ db, route, navigation, isConnected, storage }) => {
   const { userID, name, backgroundColor } = route.params;
+  // Destructure parameters directly in the function argument
 
   const [messages, setMessages] = useState([]);
-  // Destructure parameters directly in the function argument
 
   const onSend = (newMessages) => {
     addDoc(collection(db, "messages"), newMessages[0])
@@ -42,7 +47,7 @@ const Chat = ({ db, route, navigation, isConnected }) => {
         documentsSnapshot.forEach(doc => {
           const data = doc.data();
           newMessages.push({
-            id: doc.id,
+            _id: doc.id,
             ...data,
             createdAt: data.createdAt ? data.createdAt.toDate() : new Date()
           });
@@ -81,6 +86,33 @@ const Chat = ({ db, route, navigation, isConnected }) => {
     }
   }
 
+  const renderCustomActions = (props) => {
+    return <CustomActions userID={userID} storage={storage} onSend={messages => onSend(messages)} {...props} />;
+  };
+
+  const renderCustomView = (props) => {
+    const { currentMessage } = props;
+    if (currentMessage.location) {
+      return (
+        <MapView
+          style={{
+            width: 150,
+            height: 100,
+            borderRadius: 13,
+            margin: 3
+          }}
+          region={{
+            latitude: currentMessage.location.latitude,
+            longitude: currentMessage.location.longitude,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+        />
+      );
+    }
+    return null;
+  }
+
   useEffect(() => {
     navigation.setOptions({ title: name })
   }, []);
@@ -91,12 +123,14 @@ const Chat = ({ db, route, navigation, isConnected }) => {
       <GiftedChat
         messages={messages}
         renderBubble={renderBubble}
+        renderInputToolbar={renderInputToolbar}
         onSend={messages => onSend(messages)}
+        renderActions={renderCustomActions}
+        renderCustomView={renderCustomView}
         user={{
           _id: userID,
-          name: name
+          name
         }}
-        renderInputToolbar={renderInputToolbar}
       />
       {Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null}
 
@@ -107,8 +141,6 @@ const Chat = ({ db, route, navigation, isConnected }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: 'center',
-    // alignItems: 'center'
   }
 });
 
